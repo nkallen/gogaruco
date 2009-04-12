@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+require 'benchmark'
+require 'rubygems'
+require 'activesupport'
+require 'socket'
+
+count = 10000
+concurrency = 10
+count_per_worker = count / concurrency
+
+host = "0.0.0.0"
+port = 10001
+
+benchmark = Benchmark.measure do
+  threads = []
+  concurrency.times do
+    threads << Thread.new do
+      count_per_worker.times do
+        socket = TCPSocket.new(host, port)
+        socket.print("\n")
+        response = socket.gets
+      end
+    end
+  end
+  threads.each(&:join)
+end
+
+puts "#{benchmark.real}"
+puts "#{benchmark.real / count_per_worker}"

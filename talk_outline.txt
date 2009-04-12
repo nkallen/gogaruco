@@ -1,0 +1,24 @@
+Theme #1: Distribution, Balance, and Locality
+
+Introduction: A Basic Network Service
+
+# Distribution
+Load Test Service
+Explain concept of IO vs CPU time
+Calculate the optimal # of workers per core
+
+# Load Balancing
+Write a Proxy
+Show Round-Robin, Random, and By-busyness
+
+# Locality
+Cache results in-process
+Fallback to network cache
+Compute
+Proxy without stickyness
+Proxy with stickyness
+
+# Other Balancing Schemes
+Client-side Partitioning
+Peer-to-Peer
+Name Server
