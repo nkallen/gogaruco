@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 ['rubygems', 'activesupport', 'eventmachine', 'socket', 'optparse', 'statosaurus'].each { |dependency| require dependency }
-['proxy/server', 'proxy/balancers/first', 'proxy/balancers/round_robin'].each { |dependency| require dependency }
+['proxy/server', 'proxy/balancers/first', 'proxy/balancers/random', 'proxy/balancers/round_robin'].each { |dependency| require dependency }
 
 begin
   $options = {
