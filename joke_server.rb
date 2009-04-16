@@ -4,6 +4,16 @@ require 'rubygems'
 require 'eventmachine'
 require 'activesupport'
 require 'statosaurus'
+require 'optparse'
+
+begin
+  $options = {
+    :port => 10000
+  }
+  OptionParser.new do |opts|
+    opts.on('-p', "--port PORT", Integer) { |port| $options[:port] = port }
+  end.parse!
+end
 
 begin
   logfile = File.join(File.dirname(__FILE__), 'log', File.basename(__FILE__) + '.log')
@@ -23,5 +33,5 @@ module JokeServer
 end
 
 EM.run do
-  EM.start_server "0.0.0.0", 10001, JokeServer
+  EM.start_server "0.0.0.0", $options[:port], JokeServer
 end

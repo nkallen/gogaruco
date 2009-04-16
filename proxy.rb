@@ -1,20 +1,19 @@
 #!/usr/bin/env ruby
 
 ['rubygems', 'activesupport', 'eventmachine', 'socket', 'optparse', 'statosaurus'].each { |dependency| require dependency }
-require 'proxy/server'
-require 'proxy/balancers/first'
+['proxy/server', 'proxy/balancers/first', 'proxy/balancers/round_robin'].each { |dependency| require dependency }
 
 begin
   $options = {
     :balancer => First,
     :port => 10000,
-    :count => 1,
+    :count => 10,
     :host => "0.0.0.0"
   }
   OptionParser.new do |opts|
-    opts.on('-s', "--balancer BALANCER", String) { |balancer| $options[:balancer] ||= balancer.constantize }
-    opts.on('-n', "--number COUNT", Integer)     { |count| $options[:count] ||= count }
-    opts.on('-p', "--port PORT", Integer)        { |port| $options[:port] ||= port }
+    opts.on('-b', "--balancer BALANCER", String) { |balancer| $options[:balancer] = balancer.constantize }
+    opts.on('-n', "--number COUNT", Integer)     { |count| $options[:count] = count }
+    opts.on('-p', "--port PORT", Integer)        { |port| $options[:port] = port }
   end.parse!
 end
 
