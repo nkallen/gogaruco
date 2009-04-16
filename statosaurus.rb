@@ -1,10 +1,8 @@
-require 'activesupport'
-
-class Stats
+class Statosaurus
   attr_accessor :transaction_id
 
   def initialize(fields, logger)
-    @fields = fields
+    @fields = fields.sort
     @values = {}
     @logger = logger
     @logger.info("# Fields: " + fields.join(" "))
@@ -12,9 +10,9 @@ class Stats
 
   def measure(field, &block)
     measurement = Benchmark.measure(&block)
-    @values["#{field}_user"] = measurement.utime
-    @values["#{field}_sys"] = measurement.stime
-    @values["#{field}_real"] = measurement.real
+    @values["#{field}_real"] = min(measurement.real)
+    @values["#{field}_sys"] = min(measurement.stime)
+    @values["#{field}_user"] = min(measurement.utime)
   end
   
   def transaction
@@ -27,7 +25,22 @@ class Stats
   private
   def print
     prefix = [Time.now.iso8601, @transaction_id].join(" ")
-    info = @fields.collect { |field| @values[field] || "-" }.join(" ")
+    info = @fields.collect { |field| format(@values[field]) }.join(" ")
     @logger.info(prefix + " " + info)
+  end
+  
+  def min(n)
+    [n, 10e-5].max
+  end
+  
+  def format(value)
+    case value
+    when NilClass
+      "-"
+    when Float
+      "%f" % value
+    else
+      value.to_s
+    end
   end
 end

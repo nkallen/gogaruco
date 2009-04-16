@@ -1,29 +1,34 @@
 #!/usr/bin/env ruby
 
-require 'benchmark'
-require 'rubygems'
-require 'activesupport'
-require 'socket'
-require 'optparse'
-require 'ostruct'
+begin
+  require 'benchmark'
+  require 'rubygems'
+  require 'activesupport'
+  require 'socket'
+  require 'optparse'
+  require 'ostruct'
+end
 
-options = {
-  :concurrency => 1,
-  :count => 100
-}
-OptionParser.new do |opts|
-  opts.on('-n', "--number COUNT", Integer) { |count| options[:count] = count }
-  opts.on('-c', "--concurrency CONCURRENCY", Integer) { |concurrency| options[:concurrency] = concurrency }
-  opts.on('-p', "--port PORT", Integer) { |port| options[:port] = port }
-end.parse!
+begin
+  $options = {
+    :concurrency => 1,
+    :count => 100,
+    :host => "0.0.0.0"
+  }
+  OptionParser.new do |opts|
+    opts.on('-n', "--number COUNT", Integer)            { |count| $options[:count] = count }
+    opts.on('-c', "--concurrency CONCURRENCY", Integer) { |concurrency| $options[:concurrency] = concurrency }
+    opts.on('-p', "--port PORT", Integer)               { |port| $options[:port] = port }
+  end.parse!
+end
 
-count_per_worker = options[:count] / options[:concurrency]
+count_per_worker = $options[:count] / $options[:concurrency]
 
 benchmark = Benchmark.measure do
   threads = []
-  options[:concurrency].times do
+  $options[:concurrency].times do
     threads << Thread.new do
-      socket = TCPSocket.new("0.0.0.0", options[:port])
+      socket = TCPSocket.new($options[:host], $options[:port])
       count_per_worker.times do |i|
         socket.print("\n")
         socket.gets

@@ -1,35 +1,53 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
-require 'eventmachine'
-require 'socket'
+['rubygems', 'activesupport', 'eventmachine', 'socket', 'optparse', 'statosaurus'].each { |dependency| require dependency }
+require 'proxy/server'
+require 'proxy/balancers/first'
 
-class Server
-  def initialize(host, port)
-    @socket = TCPSocket.new(host, port)
-  end
+begin
+  $options = {
+    :balancer => First,
+    :port => 10000,
+    :count => 1,
+    :host => "0.0.0.0"
+  }
+  OptionParser.new do |opts|
+    opts.on('-s', "--balancer BALANCER", String) { |balancer| $options[:balancer] ||= balancer.constantize }
+    opts.on('-n', "--number COUNT", Integer)     { |count| $options[:count] ||= count }
+    opts.on('-p', "--port PORT", Integer)        { |port| $options[:port] ||= port }
+  end.parse!
+end
 
-  def forward(data)
-    @socket.print(data)
-    @socket.gets
-  end
+begin
+  logfile = File.join(File.dirname(__FILE__), 'log', File.basename(__FILE__) + '.log')
+  $stats = Statosaurus.new(['job_user', 'job_sys', 'job_real'], Logger.new(logfile))
 end
 
 module ProxyServer
   def receive_data(data)
-    send_data(server.forward(data))
-    # output w3c data with user, sys, and real
+    $stats.transaction do # TODO propagate txnid to server.
+      $stats.measure('job') do
+        send_data(ProxyServer.forward(data))
+      end
+    end
   end
-  
-  def server
-    # RoundRobinSocketBalancer.new(socket1, socket2, socket3)
-    # RandomSocketBalancer.new(socket1, socket2, socket3)
-    # BusynessSocketBalancer.new(socket1, socket2, socket3)
-    # StickySocketBalancer.new(socket1, socket2, socket3)
-    @server ||= Server.new("0.0.0.0", 10001)
+
+  def self.forward(data)
+    balancer.forward(data)
+  end
+
+  private
+  def self.servers
+    @servers ||= (1..$options[:count]).inject([]) do |servers, i|
+      servers << Server.new($options[:host], $options[:port] + i)
+    end
+  end
+
+  def self.balancer
+    @balancer ||= $options[:balancer].new(servers)
   end
 end
 
 EM.run do
-  EM.start_server "0.0.0.0", 10000, ProxyServer
+  EM.start_server $options[:host], $options[:port], ProxyServer
 end
