@@ -4,27 +4,34 @@ require 'benchmark'
 require 'rubygems'
 require 'activesupport'
 require 'socket'
+require 'optparse'
+require 'ostruct'
 
-count = 10000
-concurrency = 10
-count_per_worker = count / concurrency
+options = {
+  :concurrency => 1,
+  :count => 100
+}
+OptionParser.new do |opts|
+  opts.on('-n', "--number COUNT", Integer) { |count| options[:count] = count }
+  opts.on('-c', "--concurrency CONCURRENCY", Integer) { |concurrency| options[:concurrency] = concurrency }
+  opts.on('-p', "--port PORT", Integer) { |port| options[:port] = port }
+end.parse!
 
-host = "0.0.0.0"
-port = 10001
+count_per_worker = options[:count] / options[:concurrency]
 
 benchmark = Benchmark.measure do
   threads = []
-  concurrency.times do
+  options[:concurrency].times do
     threads << Thread.new do
-      count_per_worker.times do
-        socket = TCPSocket.new(host, port)
+      socket = TCPSocket.new("0.0.0.0", options[:port])
+      count_per_worker.times do |i|
         socket.print("\n")
-        response = socket.gets
+        socket.gets
       end
     end
   end
   threads.each(&:join)
 end
 
-puts "#{benchmark.real}"
-puts "#{benchmark.real / count_per_worker}"
+mean = benchmark.real / count_per_worker
+puts "Requests per second:\t%2f [#/sec] (mean)" % mean

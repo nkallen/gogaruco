@@ -2,11 +2,15 @@
 
 require 'rubygems'
 require 'eventmachine'
+require 'util/stats'
+
+$stats = Stats.new(['job_user', 'job_sys', 'job_real'], Logger.new(STDOUT))
 
 module JokeServer
   def receive_data(data)
-    send_data("knock knock\n")
-    # output w3c data with user, sys, and real
+    $stats.transaction do
+      $stats.measure('job') { send_data("knock knock\n") }
+    end
   end
 end
 
