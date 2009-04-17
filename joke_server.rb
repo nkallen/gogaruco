@@ -19,21 +19,12 @@ end
 
 module JokeServer
   include LineBufferedConnection
-  extend InProcessLRUCache
 
   def receive_line(line)
-    $stats.transaction do
-      data, source_transaction_id = line.split(';')
-      $stats.set('source_transaction_id', data)
-      $stats.measure('job') do
-        result = JokeServer.get(data) do
-          100000.times { Time.now }
-          sleep rand * 3
-          "KNOCK KNOCK: #{data}\n"
-        end
-        send_data(result)
-      end
-    end
+    100000.times { Time.now }
+    sleep rand * 3
+    result = "KNOCK KNOCK: #{line}\n"
+    send_data(result)
   end
 end
 
