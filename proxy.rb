@@ -20,7 +20,7 @@ end
 
 begin
   logfile = File.join(File.dirname(__FILE__), 'log', File.basename(__FILE__, '.rb') + '.log')
-  $stats = Statosaurus.new(['job_user', 'job_sys', 'job_real'], Logger.new(logfile))
+  $stats = Statosaurus.new(['job_user', 'job_sys', 'job_real', 'server'], Logger.new(logfile))
 end
 
 module ProxyServer

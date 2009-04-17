@@ -1,5 +1,5 @@
 class Server
-  include Deferrable
+  attr_reader :port
 
   def initialize(host, port)
     @host, @port = host, port

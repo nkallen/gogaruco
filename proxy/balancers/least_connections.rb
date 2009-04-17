@@ -3,12 +3,14 @@ require 'proxy/balancers/balancer'
 class LeastConnections < Balancer
   def forward(data)
     next_server do |server|
+      $stats.set('server', server.port)
       server.call(data)
     end
   end
 
   private
   def next_server
+    p servers
     server = nil
     Thread.exclusive do
       server = servers.min do |s1, s2|
