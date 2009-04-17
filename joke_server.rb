@@ -14,7 +14,7 @@ end
 
 begin
   logfile = File.join(File.dirname(__FILE__), 'log', File.basename(__FILE__, '.rb') + '.log')
-  $stats = Statosaurus.new(['job_user', 'job_sys', 'job_real', 'source_transaction_id'], Logger.new(logfile))
+  $stats = Statosaurus.new(['cache_hit', 'job_user', 'job_sys', 'job_real', 'source_transaction_id'], Logger.new(logfile))
 end
 
 module JokeServer
@@ -24,11 +24,11 @@ module JokeServer
   def receive_line(line)
     $stats.transaction do
       data, source_transaction_id = line.split(';')
-      $stats.set('source_transaction_id', data)
+      $stats.set('source_transaction_id', source_transaction_id)
       $stats.measure('job') do
         result = JokeServer.get(data) do
           100000.times { Time.now }
-          sleep rand * 3
+          sleep rand
           "KNOCK KNOCK: #{data}\n"
         end
         send_data(result)
