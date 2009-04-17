@@ -24,13 +24,15 @@ end
 
 count_per_worker = $options[:count] / $options[:concurrency]
 
+request = (1..10).to_a
+
 benchmark = Benchmark.measure do
   threads = []
-  $options[:concurrency].times do |request|
+  $options[:concurrency].times do
     threads << Thread.new do
       socket = TCPSocket.new($options[:host], $options[:port])
       count_per_worker.times do
-        socket.print("#{request}\n")
+        socket.print("#{request.rand}\n")
         socket.readline
       end
     end
