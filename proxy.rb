@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-['rubygems', 'activesupport', 'eventmachine', 'socket', 'optparse', 'statosaurus'].each { |dependency| require dependency }
-['util/line_protocol', 'proxy/server', 'proxy/balancers/first', 'proxy/balancers/random', 'proxy/balancers/round_robin', 'proxy/balancers/least_connections'].each { |dependency| require dependency }
+['rubygems', 'activesupport', 'eventmachine', 'socket', 'optparse'].each { |dependency| require dependency }
+['util/statosaurus', 'util/line_buffered_connection', 'proxy/server', 'proxy/balancers/first', 'proxy/balancers/random', 'proxy/balancers/round_robin', 'proxy/balancers/least_connections'].each { |dependency| require dependency }
 
 begin
   $options = {
@@ -23,22 +23,38 @@ begin
 end
 
 module ProxyServer
-  include LineProtocol
-  include EventMachine::Deferrable
+  include LineBufferedConnection
   
-  def call(data)
-    proxy = self
-    p "spawning"
-    EventMachine.spawn do
+  def receive_line(line)
+    EventMachine.defer do
       $stats.transaction do
         $stats.measure('job') do
           message = $stats.transaction_id + "\n"
+          p "forwarding"
+          sleep 0
           response = ProxyServer.forward(message)
-          proxy.send_data(response)
-          p "finished"
+          p "sending data"
+          sleep 0
+          send_data(response)
+          p "sent"
         end
       end
-    end.run
+    end
+  end
+  
+  def defer(&block)
+    p "pushed block"
+    (@queue ||= Queue.new) << block
+    initialize_thread
+  end
+  
+  def initialize_thread
+    @thread ||= Thread.new do
+      while true
+        p "looking"
+        @queue.pop.call
+      end
+    end
   end
 
   def self.forward(data)

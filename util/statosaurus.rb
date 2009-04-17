@@ -9,10 +9,13 @@ class Statosaurus
   end
 
   def measure(field, &block)
-    measurement = Benchmark.measure(&block)
+    measurement = Benchmark.measure do
+      result = yield
+    end
     @values["#{field}_real"] = min(measurement.real)
     @values["#{field}_sys"] = min(measurement.stime)
     @values["#{field}_user"] = min(measurement.utime)
+    result
   end
   
   def set(key, value)
@@ -21,9 +24,10 @@ class Statosaurus
 
   def transaction
     @transaction_id = "#{Process.pid}-#{Time.now.to_i}-#{rand(9999)}"
-    yield
+    result = yield
     print
     @values, @transaction_id = {}, nil
+    result
   end
   
   private

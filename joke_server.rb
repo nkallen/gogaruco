@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-['rubygems', 'eventmachine', 'activesupport', 'statosaurus', 'optparse'].each { |dependency| require dependency }
-['util/line_protocol'].each { |dependency| require dependency }
+['rubygems', 'eventmachine', 'activesupport', 'optparse'].each { |dependency| require dependency }
+['util/statosaurus', 'util/line_buffered_connection'].each { |dependency| require dependency }
 
 begin
   $options = {
@@ -18,15 +18,15 @@ begin
 end
 
 module JokeServer
-  include LineProtocol
+  include LineBufferedConnection
 
-  def call(data)
+  def receive_line(line)
     $stats.transaction do
-      $stats.set('source_transaction_id', data)
+      $stats.set('source_transaction_id', line)
       $stats.measure('job') do
         10000.times {}
         sleep rand
-        send_data("knock knock\n")
+        send_data("KNOCK KNOCK\n")
       end
     end
   end

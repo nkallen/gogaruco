@@ -38,5 +38,5 @@ benchmark = Benchmark.measure do
   threads.each(&:join)
 end
 
-mean = benchmark.real / count_per_worker
+mean = benchmark.real / $options[:count]
 puts "Requests per second:\t%2f [#/sec] (mean)" % mean

@@ -14,12 +14,10 @@ class LeastConnections < Balancer
       server = servers.shift
     end
 
-    result = yield server
-
+    yield server
+  ensure
     Thread.exclusive do
       servers.push server
     end
-    
-    result
   end
 end
