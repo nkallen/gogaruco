@@ -1,24 +1,26 @@
-Theme #1: Distribution, Balance, and Locality
+# Distribution, Balance, and Locality
 
-Introduction: A Basic Network Service
+# Introduction:
+Who am I?
+Talk outline
 
 # Distribution
+Simple Network Service with EventMachine
 Load Test Service
 Explain concept of IO vs CPU time
+Collect statistics
 Calculate the optimal # of workers per core
 
 # Load Balancing
+Alternatives: proxy, ketama, dns, p2p
 Write a Proxy
-Show Round-Robin, Random, and By-busyness
+Propagate transaction-id through system
+Show Round-Robin, Random, and LeastConnections strategies
 
 # Locality
+Distributed Memory Hierarchy / Computation Hierarchy
 Cache results in-process
-Fallback to network cache
-Compute
-Proxy without stickyness
-Proxy with stickyness
+Examples of Locality
+Achieve locality with Sticky strategy
 
-# Other Balancing Schemes
-Client-side Partitioning
-Peer-to-Peer
-Name Server
+Questions?
