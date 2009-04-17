@@ -39,4 +39,4 @@ benchmark = Benchmark.measure do
 end
 
 mean = $options[:count] / benchmark.real
-puts "Requests per second:\t%2f [#/sec] (mean)" % mean
+puts "Requests per second (throughput):\t%2f [#/sec] (mean)" % mean
