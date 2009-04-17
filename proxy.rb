@@ -20,19 +20,16 @@ end
 
 begin
   logfile = File.join(File.dirname(__FILE__), 'log', File.basename(__FILE__, '.rb') + '.log')
-  $stats = Statosaurus.new(['job_user', 'job_sys', 'job_real'], Logger.new(logfile))
+  $stats = Statosaurus.new(['job_user', 'job_sys', 'job_real', 'server'], Logger.new(logfile))
 end
 
 module ProxyServer
-  include LineBufferedConnection, Deferrable
+  include LineBufferedConnection
   
   def receive_line(line)
-    defer do
-      $stats.transaction do
-        $stats.measure('job') do
-          message = "#{line};#{$stats.transaction_id}\n"
-          send_data(ProxyServer.forward(message))
-        end
+    $stats.transaction do
+      $stats.measure('job') do
+        send_data(ProxyServer.forward(line + "\n"))
       end
     end
   end
