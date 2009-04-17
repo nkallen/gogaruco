@@ -15,11 +15,15 @@ class Statosaurus
     @values["#{field}_user"] = min(measurement.utime)
   end
   
+  def set(key, value)
+    @values[key] = value
+  end
+
   def transaction
     @transaction_id = "#{Process.pid}-#{Time.now.to_i}-#{rand(9999)}"
     yield
     print
-    @values = {}
+    @values, @transaction_id = {}, nil
   end
   
   private

@@ -28,11 +28,14 @@ module ProxyServer
   
   def call(data)
     proxy = self
+    p "spawning"
     EventMachine.spawn do
-      p "spawning"
-      $stats.transaction do # TODO propagate txnid to server.
+      $stats.transaction do
         $stats.measure('job') do
-          proxy.send_data(ProxyServer.forward(data + "\n"))
+          message = $stats.transaction_id + "\n"
+          response = ProxyServer.forward(message)
+          proxy.send_data(response)
+          p "finished"
         end
       end
     end.run
