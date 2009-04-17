@@ -29,7 +29,8 @@ module ProxyServer
   def receive_line(line)
     $stats.transaction do
       $stats.measure('job') do
-        send_data(ProxyServer.forward(line + "\n"))
+        message = "#{line};#{$stats.transaction_id}\n"
+        send_data(ProxyServer.forward(message))
       end
     end
   end
