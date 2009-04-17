@@ -10,7 +10,6 @@ class LeastConnections < Balancer
 
   private
   def next_server
-    p servers
     server = nil
     Thread.exclusive do
       server = servers.min do |s1, s2|
