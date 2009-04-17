@@ -1,6 +1,8 @@
 require 'proxy/balancers/balancer'
 
 class LeastConnections < Balancer
+  include Synchronizable
+  
   def forward(data)
     next_server do |server|
       server.call(data)
@@ -10,7 +12,7 @@ class LeastConnections < Balancer
   private
   def next_server
     server = nil
-    Thread.exclusive do
+    synchronize(:next_server) do
       server = servers.min do |s1, s2|
         s1.connections <=> s2.connections
       end

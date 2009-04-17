@@ -1,5 +1,7 @@
 class Server
-  include Deferrable
+  include Synchronizable
+    
+  attr_reader :port
 
   def initialize(host, port)
     @host, @port = host, port
@@ -14,13 +16,13 @@ class Server
   end
 
   def reserve
-    Thread.exclusive do
+    synchronize(:connections) do
       self.connections += 1
     end
   end
 
   def release
-    Thread.exclusive do
+    synchronize(:connections) do
       self.connections -= 1
     end
   end
