@@ -1,14 +1,10 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
-require 'eventmachine'
-require 'activesupport'
-require 'statosaurus'
-require 'optparse'
+['rubygems', 'eventmachine', 'activesupport', 'statosaurus', 'optparse'].each { |dependency| require dependency }
 
 begin
   $options = {
-    :port => 10000
+    :port => 10001
   }
   OptionParser.new do |opts|
     opts.on('-p', "--port PORT", Integer) { |port| $options[:port] = port }
@@ -24,8 +20,8 @@ module JokeServer
   def receive_data(data)
     $stats.transaction do
       $stats.measure('job') do
-        100.times {}
-        sleep 0.1
+        10000.times {}
+        sleep rand
         send_data("knock knock\n")
       end
     end

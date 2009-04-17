@@ -23,12 +23,18 @@ begin
 end
 
 module ProxyServer
+  include EventMachine::Deferrable
+  
   def receive_data(data)
-    $stats.transaction do # TODO propagate txnid to server.
-      $stats.measure('job') do
-        send_data(ProxyServer.forward(data))
+    proxy = self
+    EventMachine.spawn do
+      p "spawning"
+      $stats.transaction do # TODO propagate txnid to server.
+        $stats.measure('job') do
+          proxy.send_data(ProxyServer.forward(data))
+        end
       end
-    end
+    end.run
   end
 
   def self.forward(data)
@@ -37,13 +43,17 @@ module ProxyServer
 
   private
   def self.servers
-    @servers ||= (1..$options[:count]).inject([]) do |servers, i|
-      servers << Server.new($options[:host], $options[:port] + i)
+    Thread.exclusive do
+      @servers ||= (1..$options[:count]).inject([]) do |servers, i|
+        servers << Server.new($options[:host], $options[:port] + i)
+      end
     end
   end
 
   def self.balancer
-    @balancer ||= $options[:balancer].new(servers)
+    Thread.exclusive do
+      @balancer ||= $options[:balancer].new(servers)
+    end
   end
 end
 
