@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 ['rubygems', 'activesupport', 'eventmachine', 'socket', 'optparse'].each { |dependency| require dependency }
-['util/statosaurus', 'util/line_buffered_connection', 'util/deferrable'].each { |dependency| require dependency }
+['util/statosaurus', 'util/synchronizable', 'util/line_buffered_connection', 'util/deferrable'].each { |dependency| require dependency }
 ['proxy/server', 'proxy/balancers/first', 'proxy/balancers/random', 'proxy/balancers/round_robin', 'proxy/balancers/least_connections', 'proxy/balancers/sticky'].each { |dependency| require dependency }
 
 begin
@@ -25,6 +25,7 @@ end
 
 module ProxyServer
   include LineBufferedConnection
+  extend Synchronizable
   
   def receive_line(line)
     $stats.transaction do
@@ -41,7 +42,7 @@ module ProxyServer
 
   private  
   def self.servers
-    @servers ||= Thread.exclusive do
+    @servers ||= synchronize(:servers) do
       (1..$options[:count]).inject([]) do |servers, i|
         servers << Server.new($options[:host], $options[:port] + i)
       end
@@ -49,7 +50,7 @@ module ProxyServer
   end
 
   def self.balancer
-    @balancer ||= Thread.exclusive do
+    @balancer ||= synchronize(:balancer) do
       $options[:balancer].new(servers)
     end
   end

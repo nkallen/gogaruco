@@ -1,4 +1,6 @@
 class Server
+  include Synchronizable
+    
   attr_reader :port
 
   include Deferrable
