@@ -40,5 +40,5 @@ benchmark = Benchmark.measure do
   threads.each(&:join)
 end
 
-mean = benchmark.real / $options[:count]
-puts "Requests per second:\t%2f [#/sec] (mean)" % mean
+mean = $options[:count] / benchmark.real
+puts "Requests per second (throughput):\t%2f [#/sec] (mean)" % mean
