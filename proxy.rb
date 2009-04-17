@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 ['rubygems', 'activesupport', 'eventmachine', 'socket', 'optparse', 'statosaurus'].each { |dependency| require dependency }
-['proxy/server', 'proxy/balancers/first', 'proxy/balancers/random', 'proxy/balancers/round_robin', 'proxy/balancers/least_connections'].each { |dependency| require dependency }
+['util/line_protocol', 'proxy/server', 'proxy/balancers/first', 'proxy/balancers/random', 'proxy/balancers/round_robin', 'proxy/balancers/least_connections'].each { |dependency| require dependency }
 
 begin
   $options = {
@@ -23,15 +23,16 @@ begin
 end
 
 module ProxyServer
+  include LineProtocol
   include EventMachine::Deferrable
   
-  def receive_data(data)
+  def call(data)
     proxy = self
     EventMachine.spawn do
       p "spawning"
       $stats.transaction do # TODO propagate txnid to server.
         $stats.measure('job') do
-          proxy.send_data(ProxyServer.forward(data))
+          proxy.send_data(ProxyServer.forward(data + "\n"))
         end
       end
     end.run
