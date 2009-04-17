@@ -9,6 +9,7 @@ class Statosaurus
   end
 
   def measure(field, &block)
+    result = nil
     measurement = Benchmark.measure do
       result = yield
     end

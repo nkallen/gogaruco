@@ -13,7 +13,7 @@ begin
 end
 
 begin
-  logfile = File.join(File.dirname(__FILE__), 'log', File.basename(__FILE__) + '.log')
+  logfile = File.join(File.dirname(__FILE__), 'log', File.basename(__FILE__, '.rb') + '.log')
   $stats = Statosaurus.new(['job_user', 'job_sys', 'job_real', 'source_transaction_id'], Logger.new(logfile))
 end
 
@@ -24,7 +24,7 @@ module JokeServer
     $stats.transaction do
       $stats.set('source_transaction_id', line)
       $stats.measure('job') do
-        10000.times {}
+        1000000.times {}
         sleep rand
         send_data("KNOCK KNOCK\n")
       end

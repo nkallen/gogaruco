@@ -31,7 +31,7 @@ benchmark = Benchmark.measure do
       socket = TCPSocket.new($options[:host], $options[:port])
       count_per_worker.times do |i|
         socket.print("\n")
-        socket.gets
+        socket.readline
       end
     end
   end

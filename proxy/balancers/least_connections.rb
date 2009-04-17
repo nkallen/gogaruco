@@ -11,13 +11,15 @@ class LeastConnections < Balancer
   def next_server
     server = nil
     Thread.exclusive do
-      server = servers.shift
+      server = servers.min do |s1, s2|
+        s1.connections <=> s2.connections
+      end
+      server.reserve
     end
 
     yield server
+
   ensure
-    Thread.exclusive do
-      servers.push server
-    end
+    server.release
   end
 end
