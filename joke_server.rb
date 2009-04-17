@@ -24,8 +24,8 @@ module JokeServer
     $stats.transaction do
       $stats.set('source_transaction_id', line)
       $stats.measure('job') do
-        1000000.times {}
-        sleep rand
+        100000.times { Time.now }
+        sleep rand * 3
         send_data("KNOCK KNOCK\n")
       end
     end
