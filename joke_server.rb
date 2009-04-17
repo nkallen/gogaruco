@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 ['rubygems', 'eventmachine', 'activesupport', 'optparse'].each { |dependency| require dependency }
-['util/statosaurus', 'util/line_buffered_connection'].each { |dependency| require dependency }
+['util/statosaurus', 'util/line_buffered_connection', 'util/in_process_lru_cache'].each { |dependency| require dependency }
 
 begin
   $options = {
@@ -19,14 +19,19 @@ end
 
 module JokeServer
   include LineBufferedConnection
+  extend InProcessLRUCache
 
   def receive_line(line)
     $stats.transaction do
-      $stats.set('source_transaction_id', line)
+      data, source_transaction_id = line.split(';')
+      $stats.set('source_transaction_id', data)
       $stats.measure('job') do
-        100000.times { Time.now }
-        sleep rand * 3
-        send_data("KNOCK KNOCK\n")
+        result = JokeServer.get(data) do
+          100000.times { Time.now }
+          sleep rand * 3
+          "KNOCK KNOCK: #{data}\n"
+        end
+        send_data(result)
       end
     end
   end

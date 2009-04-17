@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 
 ['rubygems', 'activesupport', 'eventmachine', 'socket', 'optparse'].each { |dependency| require dependency }
-['util/statosaurus', 'util/line_buffered_connection', 'util/deferrable', 'proxy/server', 'proxy/balancers/first', 'proxy/balancers/random', 'proxy/balancers/round_robin', 'proxy/balancers/least_connections'].each { |dependency| require dependency }
+['util/statosaurus', 'util/line_buffered_connection', 'util/deferrable'].each { |dependency| require dependency }
+['proxy/server', 'proxy/balancers/first', 'proxy/balancers/random', 'proxy/balancers/round_robin', 'proxy/balancers/least_connections', 'proxy/balancers/sticky'].each { |dependency| require dependency }
 
 begin
   $options = {
@@ -29,7 +30,7 @@ module ProxyServer
     defer do
       $stats.transaction do
         $stats.measure('job') do
-          message = $stats.transaction_id + "\n"
+          message = "#{line};#{$stats.transaction_id}\n"
           send_data(ProxyServer.forward(message))
         end
       end
