@@ -1,0 +1,25 @@
+1       2
+0.5c    0.5c
+0.5s    0.5s
+
+TIME:       [0-.5]  [.5-1]  [1-1.5]
+CPU:        0.5c1   0.5c2   0.5c1
+STALLED:    0.5s1   0.5s1
+
+OPTIMAL_CORES = WALL-CLOCK/CPU
+
+###########
+
+ROUND_ROBIN
+
+W1  W2  W3  W4  W5
+==================
+J1  J2  J3  J4  J5
+J6  J7
+
+
+LEAST_CONNECTIONS
+
+W1  W2  W3  W4  W5
+==================
+J1  J2          J5
