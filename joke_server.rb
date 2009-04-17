@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 ['rubygems', 'eventmachine', 'activesupport', 'optparse'].each { |dependency| require dependency }
-['util/statosaurus', 'util/line_buffered_connection', 'util/in_process_lru_cache'].each { |dependency| require dependency }
+['util/statosaurus', 'util/synchronizable', 'util/line_buffered_connection', 'util/in_process_lru_cache'].each { |dependency| require dependency }
 
 begin
   $options = {
