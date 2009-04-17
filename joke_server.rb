@@ -23,10 +23,10 @@ module JokeServer
   def receive_line(line)
     $stats.transaction do
       data, source_transaction_id = line.split(';')
-      $stats.set('source_transaction_id', data)
+      $stats.set('source_transaction_id', source_transaction_id)
       $stats.measure('job') do
         100000.times { Time.now }
-        sleep rand * 2
+        sleep rand
         result = "KNOCK KNOCK: #{data}\n"
         send_data(result)
       end
