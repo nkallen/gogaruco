@@ -7,7 +7,6 @@ class Sticky < Balancer
 
   private
   def server_for(data)
-    p data
     data = data.split(';').first
     servers[data.to_i % servers.size]
   end
