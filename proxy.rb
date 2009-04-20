@@ -27,12 +27,6 @@ module ProxyServer
   include LineBufferedConnection, Deferrable
   extend Synchronizable
 
-  def initialize
-    # Hash defaults are thread safe? on which interpreters?
-    synchronize(:servers) {}
-    synchronize(:balancer) {}
-  end
-
   def receive_line(line)
     defer do
       $stats.transaction do

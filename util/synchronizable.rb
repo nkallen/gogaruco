@@ -6,7 +6,9 @@ module Synchronizable
     # initialize/new and having included and extended callbacks.
     @@mutex.synchronize do
       @mutex ||= Hash.new do |h,k|
-        h[k] = Mutex.new
+        @@mutex.synchronize do
+          h[k] = Mutex.new
+        end
       end
     end
   end
