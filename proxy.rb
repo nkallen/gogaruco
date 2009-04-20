@@ -26,7 +26,13 @@ end
 module ProxyServer
   include LineBufferedConnection, Deferrable
   extend Synchronizable
-  
+
+  def initialize
+    # Hash defaults are thread safe? on which interpreters?
+    synchronize(:servers) {}
+    synchronize(:balancer) {}
+  end
+
   def receive_line(line)
     defer do
       $stats.transaction do
@@ -44,16 +50,18 @@ module ProxyServer
 
   private  
   def self.servers
-    @servers ||= synchronize(:servers) do
-      (1..$options[:count]).inject([]) do |servers, i|
-        servers << Server.new($options[:host], $options[:port] + i)
+    synchronize(:servers) do
+      @servers ||= begin
+        (1..$options[:count]).inject([]) do |servers, i|
+          servers << Server.new($options[:host], $options[:port] + i)
+        end
       end
     end
   end
 
   def self.balancer
-    @balancer ||= synchronize(:balancer) do
-      $options[:balancer].new(servers)
+    synchronize(:balancer) do
+      @balancer ||= $options[:balancer].new(servers)
     end
   end
 end
