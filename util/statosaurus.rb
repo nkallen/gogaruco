@@ -55,6 +55,8 @@ class Statosaurus
       "-"
     when Float
       "%f" % value
+    when TrueClass, FalseClass
+      value ? '1' : 0
     else
       value.to_s
     end

@@ -1,20 +1,25 @@
-module InProcessLRUCache
-  def get(data)
-    @cache ||= []
-    cache_hit = @cache.detect do |key, value|
-      data == key
-    end
-    if !cache_hit
-      $stats.set('cache_hit', 0)
+class InProcessLRUCache
+  def initialize(max_keys)
+    @max_keys = max_keys
+  end
+  
+  def get(key)
+    @cache ||= {}
+    @lru ||= []
+    
+    @lru << key
 
-      result = yield(data)
-      @cache.unshift([data, result])
-      @cache.slice!(2..-1)
-      result
-    else
-      $stats.set('cache_hit', 1)
-
-      cache_hit[1]
+    result = @cache[key]
+    $stats.set('cache_hit', !!result)
+    if !result
+      free_least_recently_used_item
+      result = @cache[key] = yield(key) if block_given?
     end
+    result
+  end
+  
+  private
+  def free_least_recently_used_item
+    @cache.delete(@lru.shift) if @cache.size >= @max_keys
   end
 end
