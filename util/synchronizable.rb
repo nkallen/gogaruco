@@ -1,12 +1,11 @@
 module Synchronizable
   @@mutex = Mutex.new
-  @@mutexes = Hash.new do |h,k|
-    h[k] = Mutex.new
-  end
   
   def mutex(mutex)
     @@mutex.synchronize do
-      @@mutexes[mutex]
+      (@mutexes ||= Hash.new do |h,k|
+        h[k] = Mutex.new
+      end)[mutex]
     end
   end
 
