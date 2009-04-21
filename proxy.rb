@@ -27,6 +27,15 @@ module ProxyServer
   include LineBufferedConnection, Deferrable
   extend Synchronizable
 
+  @@servers = (1..$options[:count]).inject([]) do |servers, i|
+    servers << Server.new($options[:host], $options[:port] + i)
+  end
+  @@balancer = $options[:balancer].new(@@servers)
+
+  def self.forward(data)
+    @@balancer.forward(data)
+  end
+  
   def receive_line(line)
     defer do
       $stats.transaction do
@@ -35,27 +44,6 @@ module ProxyServer
           send_data(ProxyServer.forward(message))
         end
       end
-    end
-  end
-
-  def self.forward(data)
-    balancer.forward(data)
-  end
-
-  private  
-  def self.servers
-    synchronize(:servers) do
-      @servers ||= begin
-        (1..$options[:count]).inject([]) do |servers, i|
-          servers << Server.new($options[:host], $options[:port] + i)
-        end
-      end
-    end
-  end
-
-  def self.balancer
-    synchronize(:balancer) do
-      @balancer ||= $options[:balancer].new(servers)
     end
   end
 end

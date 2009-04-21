@@ -13,9 +13,7 @@ class LeastConnections < Balancer
   def next_server
     server = nil
     synchronize(:next_server) do
-      server = servers.min do |s1, s2|
-        s1.connections <=> s2.connections
-      end
+      server = servers.min
       server.reserve
     end
 
